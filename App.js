@@ -14,18 +14,27 @@ import UserManagementScreen from './screens/UserManagementScreen';
 const Stack = createNativeStackNavigator();
 
 const App = () => {
-  const [initialRoute, setInitialRoute] = useState('FirstTimeUser');
+  const [initialRoute, setInitialRoute] = useState(null);
 
   useEffect(() => {
-    const checkToken = async () => {
+    const checkInitialRoute = async () => {
+      const isFirstTime = await AsyncStorage.getItem('firstTimeUser');
       const token = await AsyncStorage.getItem('token');
-      if (token) {
+      if (isFirstTime === null) {
+        setInitialRoute('FirstTimeUser');
+      } else if (token) {
         setInitialRoute('Manager');
+      } else {
+        setInitialRoute('Login');
       }
     };
 
-    checkToken();
+    checkInitialRoute();
   }, []);
+
+  if (initialRoute === null) {
+    return null; // Optionally add a loading spinner here
+  }
 
   return (
     <NavigationContainer>

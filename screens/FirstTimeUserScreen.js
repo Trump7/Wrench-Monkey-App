@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 SplashScreen.preventAutoHideAsync();
@@ -22,6 +23,11 @@ const FirstTimeUserScreen = ({ navigation }) => {
     });
   }, []);
 
+  const handleCompleteSetup = async () => {
+    await AsyncStorage.setItem('firstTimeUser', 'false');
+    navigation.navigate('Register');
+  };
+
   if (!fontLoaded) {
     return null; // Return null until the font is loaded
   }
@@ -35,7 +41,7 @@ const FirstTimeUserScreen = ({ navigation }) => {
       </Text>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('Register')}
+        onPress={handleCompleteSetup}
       >
         <Text style={styles.buttonText}>New user? Sign Up</Text>
       </TouchableOpacity>
