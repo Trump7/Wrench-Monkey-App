@@ -6,7 +6,7 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import Header from '../components/header';
 import placeholder from '../assets/placeholder.png';
 import config from '../config';
-import { initializeEventSource, closeEventSource } from '../utilities/eventSourceManager';
+import { eventSourceManager } from '../utilities/eventSourceManager';
 
 const fetchFonts = () => {
   return Font.loadAsync({
@@ -56,19 +56,12 @@ const HistoryScreen = ({ navigation }) => {
 
     fetchHistory();
 
-    const handlers = {
-      history: (data) => {
-        setHistory(formatHistory(data));
-      },
-      error: (error) => {
-        console.error('EventSource error:', error);
-      },
-    };
-
-    initializeEventSource(`${config.apiURL}/stream`, handlers);
+    const cleanupEventSource = eventSourceManager(() => {}, () => {}, (data) => {
+      setHistory(formatHistory(data));
+    });
 
     return () => {
-      closeEventSource();
+      cleanupEventSource();
     };
   }, []);
 

@@ -1,56 +1,42 @@
 import EventSource from 'react-native-event-source';
+import config from '../config';
 
-let eventSource = null;
+const eventSourceManager = (setStatus, setTools, setHistory) => {
+  let eventSource = new EventSource(`${config.apiURL}/stream`);
 
-export const initializeEventSource = (url, handlers) => {
-  if (!eventSource) {
-    eventSource = new EventSource(url);
-
-    eventSource.onopen = () => {
-      console.log('EventSource connection opened');
-    };
-
+  const setupEventSource = () => {
     eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (handlers.message) {
-        handlers.message(data);
+      const parsedData = JSON.parse(event.data);
+      if (parsedData.type === 'status') {
+        setStatus(parsedData.data);
+      } else if (parsedData.type === 'tools') {
+        setTools(parsedData.data);
+      } else if (parsedData.type === 'history') {
+        setHistory(parsedData.data);
       }
     };
 
     eventSource.onerror = (error) => {
       console.error('EventSource error:', error);
-      if (handlers.error) {
-        handlers.error(error);
+
+      if (eventSource.readyState === EventSource.CLOSED || eventSource.readyState === EventSource.CONNECTING) {
+        console.log('Reconnecting EventSource...');
+        eventSource.close();
+
+        // Reconnect after a delay
+        setTimeout(() => {
+          eventSource = new EventSource(`${config.apiURL}/stream`);
+          setupEventSource();
+        }, 3000);
       }
-      eventSource.close();
     };
+  };
 
-    if (handlers.history) {
-      eventSource.addEventListener('history', (event) => {
-        const data = JSON.parse(event.data);
-        handlers.history(data);
-      });
-    }
+  setupEventSource();
 
-    if (handlers.tools) {
-      eventSource.addEventListener('tools', (event) => {
-        const data = JSON.parse(event.data);
-        handlers.tools(data);
-      });
-    }
-
-    if (handlers.status) {
-      eventSource.addEventListener('status', (event) => {
-        const data = JSON.parse(event.data);
-        handlers.status(data);
-      });
-    }
-  }
-};
-
-export const closeEventSource = () => {
-  if (eventSource) {
+  return () => {
     eventSource.close();
-    eventSource = null;
-  }
+  };
 };
+
+export { eventSourceManager };
