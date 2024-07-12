@@ -54,11 +54,13 @@ const LoginScreen = ({ navigation }) => {
           const response = await axios.post(`${config.apiURL}/auth/login`, { email, pass: password });
           const { token, userId } = response.data;
           console.log('Login successful:', token, userId);
-          navigation.navigate('Manager');
           // Save token and userId using AsyncStorage
           await AsyncStorage.setItem('token', token);
           await AsyncStorage.setItem('userId', userId.toString());
           console.log("token stored");
+          setEmail('');
+          setPassword('');
+          navigation.navigate('Manager');
         } catch (error) {
           console.error('Login error:', error.response?.data || error.message);
           setErrors({ ...newErrors, api: 'Invalid email or password' });
@@ -119,7 +121,11 @@ const LoginScreen = ({ navigation }) => {
         </View>
         <TouchableOpacity
         style={styles.link}
-        onPress={() => navigation.navigate('Register')}
+        onPress={() => {
+          navigation.navigate('Register');
+          setEmail('');
+          setPassword('');
+        }}
         >
         <Text style={styles.linkText}>Create Account</Text>
         </TouchableOpacity>

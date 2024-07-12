@@ -5,11 +5,13 @@ import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 const Header = ({ userName, profilePicture, logo, navigation }) => {
   return (
     <View style={styles.container}>
-      <Image source={profilePicture} style={styles.profilePicture} />
-      <View style={styles.textContainer}>
-        <Text style={styles.loggedInText}>Logged in as</Text>
-        <Text style={styles.userName}>{userName}</Text>
-      </View>
+      <TouchableOpacity style={styles.userInfo} onPress={() => navigation.navigate('UserManagement')}>
+        <Image source={profilePicture} style={styles.profilePicture} />
+        <View style={styles.textContainer}>
+          <Text style={styles.loggedInText}>Logged in as</Text>
+          <Text style={styles.userName}>{userName}</Text>
+        </View>
+      </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('Manager')}>
         <Image source={logo} style={styles.logo} />
       </TouchableOpacity>
@@ -26,6 +28,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#00001B',
     width: '100%',
   },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   profilePicture: {
     width: wp('12%'),
     height: wp('12%'),
@@ -33,7 +39,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   textContainer: {
-    flex: 1,
     marginLeft: wp('4%'),
   },
   loggedInText: {

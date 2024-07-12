@@ -9,6 +9,7 @@ import RegisterScreen from './screens/RegisterScreen';
 import ManagerScreen from './screens/ManagerScreen';
 import ToolsScreen from './screens/ToolsScreen';
 import HistoryScreen from './screens/HistoryScreen';
+import UserManagementScreen from './screens/UserManagementScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -57,6 +58,11 @@ const App = () => {
         <Stack.Screen
           name="History"
           component={HistoryScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="UserManagement"
+          component={UserManagementScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

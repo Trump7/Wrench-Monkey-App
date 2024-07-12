@@ -26,6 +26,8 @@ const RegisterScreen = ({ navigation }) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [modalYPosition] = useState(new Animated.Value(-100));
 
+
+
   useEffect(() => {
     fetchFonts().then(() => {
       setFontLoaded(true);
@@ -95,7 +97,14 @@ const RegisterScreen = ({ navigation }) => {
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.loginButton}
-            onPress={() => navigation.navigate('Login')}
+            onPress={() => {
+              setEmail('');
+              setPassword('');
+              setConfirmPassword('');
+              setFullName('');
+              setRobotNumber('');
+              navigation.navigate('Login')
+            }}
           >
             <Ionicons name="arrow-back" size={24} color="#fff" />
             <Text style={styles.loginButtonText}>Login</Text>
@@ -193,6 +202,11 @@ const RegisterScreen = ({ navigation }) => {
                 style={styles.button}
                 onPress={() => {
                 setModalVisible(false);
+                setEmail('');
+                setPassword('');
+                setConfirmPassword('');
+                setFullName('');
+                setRobotNumber('');
                 navigation.navigate('Login');
                 }}
             >

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, FlatList } from 'react-native';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -79,7 +79,7 @@ const HistoryScreen = ({ navigation }) => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
       <Header 
         userName={userData.name}
         profilePicture={userData.profilePicture} 
@@ -94,16 +94,18 @@ const HistoryScreen = ({ navigation }) => {
           value={searchTerm}
           onChangeText={handleSearchChange}
         />
-        {filteredHistory.map((historyItem, index) => (
-          <View key={index} style={styles.historyItem}>
-            <Text style={styles.historyText}>Tool: {historyItem.toolName}</Text>
-            <Text style={styles.historyText}>User: {historyItem.userName}</Text>
-            <Text style={styles.historyText}>Check Out: {historyItem.checkOut}</Text>
-            <Text style={styles.historyText}>Check In: {historyItem.checkIn}</Text>
-          </View>
-        ))}
+        <ScrollView style={styles.scrollableBox}>
+          {filteredHistory.map((historyItem, index) => (
+            <View key={index} style={styles.historyItem}>
+              <Text style={styles.historyText}>Tool: {historyItem.toolName}</Text>
+              <Text style={styles.historyText}>User: {historyItem.userName}</Text>
+              <Text style={styles.historyText}>Check Out: {historyItem.checkOut}</Text>
+              <Text style={styles.historyText}>Check In: {historyItem.checkIn}</Text>
+            </View>
+          ))}
+        </ScrollView>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
@@ -114,14 +116,13 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'flex-start',
     alignItems: 'center',
-    marginTop: '1%',
     paddingHorizontal: wp('4%'),
   },
   title: {
     fontFamily: 'custom-font',
     fontSize: wp('8%'),
+    marginTop: hp('2%'),
     marginBottom: hp('2%'),
     textAlign: 'center',
     color: '#fff',
@@ -130,11 +131,15 @@ const styles = StyleSheet.create({
     fontFamily: 'custom-font',
     width: '100%',
     padding: hp('1.5%'),
-    marginVertical: hp('1%'),
+    marginBottom: hp('2%'),
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 5,
     backgroundColor: '#fff',
+  },
+  scrollableBox: {
+    width: '100%',
+    height: hp('60%'),  // Adjust the height as needed
   },
   historyItem: {
     width: '100%',
