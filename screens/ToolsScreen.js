@@ -6,7 +6,7 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import Header from '../components/header';
 import placeholder from '../assets/placeholder.png';
 import config from '../config';
-import { eventSourceManager } from '../utilities/eventSourceManager';
+import { useFocusEffect } from '@react-navigation/native';
 
 const fetchFonts = () => {
   return Font.loadAsync({
@@ -39,41 +39,38 @@ const ToolsScreen = ({ navigation }) => {
     fetchFontsAsync();
   }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [toolsResponse, jobsResponse, statusResponse] = await Promise.all([
-          fetch(`${config.apiURL}/tools`),
-          fetch(`${config.apiURL}/jobs`),
-          fetch(`${config.apiURL}/status`)
-        ]);
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchData = async () => {
+        try {
+          const [toolsResponse, jobsResponse, statusResponse] = await Promise.all([
+            fetch(`${config.apiURL}/tools`),
+            fetch(`${config.apiURL}/jobs`),
+            fetch(`${config.apiURL}/status`)
+          ]);
 
-        const toolsData = await toolsResponse.json();
-        const jobsData = await jobsResponse.json();
-        const statusData = await statusResponse.json();
+          const toolsData = await toolsResponse.json();
+          const jobsData = await jobsResponse.json();
+          const statusData = await statusResponse.json();
 
-        setTools(toolsData);
-        setJobs(jobsData);
-        setStatus(statusData);
-      } catch (error) {
-        setErrorMessage('Error fetching data.');
-        setErrorVisible(true);
-        console.error('Error fetching data:', error);
-      }
-    };
+          setTools(toolsData);
+          setJobs(jobsData);
+          setStatus(statusData);
+          console.log('Fetched data:', { toolsData, jobsData, statusData });
+        } catch (error) {
+          setErrorMessage('Error fetching data.');
+          setErrorVisible(true);
+          console.error('Error fetching data:', error);
+        }
+      };
 
-    fetchData();
+      fetchData();
 
-    const cleanupEventSource = eventSourceManager(
-      setStatus,
-      setTools,
-      setJobs
-    );
+      const intervalId = setInterval(fetchData, 5000); // Poll every 5 seconds
 
-    return () => {
-      cleanupEventSource();
-    };
-  }, []);
+      return () => clearInterval(intervalId); // Clean up on component unmount
+    }, [])
+  );
 
   if (!fontLoaded) {
     return null;

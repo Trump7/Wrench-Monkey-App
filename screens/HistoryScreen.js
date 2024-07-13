@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, FlatList } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView } from 'react-native';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Header from '../components/header';
 import placeholder from '../assets/placeholder.png';
 import config from '../config';
-import { eventSourceManager } from '../utilities/eventSourceManager';
+import { useFocusEffect } from '@react-navigation/native';
 
 const fetchFonts = () => {
   return Font.loadAsync({
@@ -43,27 +43,26 @@ const HistoryScreen = ({ navigation }) => {
     fetchFontsAsync();
   }, []);
 
-  useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const response = await fetch(`${config.apiURL}/history`);
-        const historyData = await response.json();
-        setHistory(formatHistory(historyData));
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchHistory = async () => {
+        try {
+          const response = await fetch(`${config.apiURL}/history`);
+          const historyData = await response.json();
+          setHistory(formatHistory(historyData));
+          console.log('Fetched history:', historyData);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
 
-    fetchHistory();
+      fetchHistory();
 
-    const cleanupEventSource = eventSourceManager(() => {}, () => {}, (data) => {
-      setHistory(formatHistory(data));
-    });
+      const intervalId = setInterval(fetchHistory, 5000); // Poll every 5 seconds
 
-    return () => {
-      cleanupEventSource();
-    };
-  }, []);
+      return () => clearInterval(intervalId); // Clean up on component unmount
+    }, [])
+  );
 
   const handleSearchChange = (text) => {
     setSearchTerm(text);

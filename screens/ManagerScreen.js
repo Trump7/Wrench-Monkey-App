@@ -7,7 +7,7 @@ import Header from '../components/header';
 import placeholder from '../assets/placeholder.png';
 import spinningGearGif from '../assets/gear.gif';
 import config from '../config';
-import { eventSourceManager } from '../utilities/eventSourceManager';
+import { useFocusEffect } from '@react-navigation/native';
 
 const fetchFonts = () => {
   return Font.loadAsync({
@@ -37,34 +37,27 @@ const ManagerScreen = ({ navigation }) => {
     fetchFontsAsync();
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const statusResponse = await fetch(`${config.apiURL}/status`);
-      const statusData = await statusResponse.json();
-      setStatus(statusData);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchData = async () => {
+        try {
+          const statusResponse = await fetch(`${config.apiURL}/status`);
+          const statusData = await statusResponse.json();
+          setStatus(statusData);
+          console.log('Fetched initial status:', statusData);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
 
-  useEffect(() => {
-    fetchData();
+      fetchData();
 
-    const cleanupEventSource = eventSourceManager(
-      (newStatus) => {
-        setStatus(prevStatus => ({
-          ...newStatus,
-          lastChecked: new Date().toISOString()
-        }));
-      },
-      () => {},
-      () => {}
-    );
+      const intervalId = setInterval(fetchData, 5000); // Poll every 5 seconds
 
-    return () => {
-      cleanupEventSource();
-    };
-  }, []);
+      return () => clearInterval(intervalId); // Clean up on component unmount
+    }, [])
+  );
+  
 
   if (!fontLoaded) {
     return null;
@@ -100,7 +93,6 @@ const ManagerScreen = ({ navigation }) => {
           destinationStation: selectedStation,
         }),
       });
-      fetchData(); // Fetch new data after updating the station
     } catch (error) {
       console.error('Error updating status:', error);
     }
@@ -121,7 +113,6 @@ const ManagerScreen = ({ navigation }) => {
           currentStation: 'Unknown',
         }),
       });
-      fetchData(); // Fetch new data after stopping the travel
     } catch (error) {
       console.error('Error updating status:', error);
     }
