@@ -7,6 +7,8 @@ import Header from '../components/header';
 import placeholder from '../assets/placeholder.png';
 import config from '../config';
 import { useFocusEffect } from '@react-navigation/native';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const fetchFonts = () => {
   return Font.loadAsync({
@@ -17,11 +19,13 @@ const fetchFonts = () => {
 const formatHistory = (historyData) => {
   return historyData.map(item => ({
     ...item,
-    toolName: item.toolId.name || 'Unknown Tool',
-    userName: item.userId.name || 'Unknown User',
+    toolName: item.toolId?.name || 'Unknown Tool',
+    userName: item.userId?.name || 'Unknown User',
     checkOut: item.checkOut ? new Date(item.checkOut).toLocaleString() : 'N/A',
-    checkIn: item.checkIn ? new Date(item.checkIn).toLocaleString() : 'N/A'
-  })).sort((a, b) => new Date(b.checkOut) - new Date(a.checkOut));
+    checkIn: item.checkIn ? new Date(item.checkIn).toLocaleString() : 'N/A',
+    // Add a timestamp for sorting purposes
+    timestamp: item.checkIn ? new Date(item.checkIn) : new Date(item.checkOut)
+  })).sort((a, b) => b.timestamp - a.timestamp);
 };
 
 const HistoryScreen = ({ navigation }) => {
@@ -29,6 +33,7 @@ const HistoryScreen = ({ navigation }) => {
   const [userData, setUserData] = useState({
     name: 'John Doe',
     profilePicture: placeholder,
+    id: '',
   });
   const [history, setHistory] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,6 +45,29 @@ const HistoryScreen = ({ navigation }) => {
       SplashScreen.hideAsync();
     };
 
+    const fetchUserData = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('userId');
+        const token = await AsyncStorage.getItem('token');
+        if (userId && token) {
+          const response = await axios.get(`${config.apiURL}/users/${userId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const user = response.data;
+          setUserData({
+            name: user.name,
+            profilePicture: user.profilePicture || placeholder,
+            id: userId,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
     fetchFontsAsync();
   }, []);
 

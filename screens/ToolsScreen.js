@@ -7,6 +7,8 @@ import Header from '../components/header';
 import placeholder from '../assets/placeholder.png';
 import config from '../config';
 import { useFocusEffect } from '@react-navigation/native';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const fetchFonts = () => {
   return Font.loadAsync({
@@ -19,6 +21,7 @@ const ToolsScreen = ({ navigation }) => {
   const [userData, setUserData] = useState({
     name: 'John Doe',
     profilePicture: placeholder,
+    id: '',
   });
   const [tools, setTools] = useState([]);
   const [jobs, setJobs] = useState([]);
@@ -36,6 +39,29 @@ const ToolsScreen = ({ navigation }) => {
       SplashScreen.hideAsync();
     };
 
+    const fetchUserData = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('userId');
+        const token = await AsyncStorage.getItem('token');
+        if (userId && token) {
+          const response = await axios.get(`${config.apiURL}/users/${userId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const user = response.data;
+          setUserData({
+            name: user.name,
+            profilePicture: user.profilePicture || placeholder,
+            id: userId,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
     fetchFontsAsync();
   }, []);
 
@@ -66,7 +92,7 @@ const ToolsScreen = ({ navigation }) => {
 
       fetchData();
 
-      const intervalId = setInterval(fetchData, 5000); // Poll every 5 seconds
+      const intervalId = setInterval(fetchData, 1000); // Poll every 5 seconds
 
       return () => clearInterval(intervalId); // Clean up on component unmount
     }, [])
