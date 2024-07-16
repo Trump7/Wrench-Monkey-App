@@ -16,8 +16,9 @@ const fetchFonts = () => {
 const UserManagementScreen = ({ navigation }) => {
   const [fontLoaded, setFontLoaded] = useState(false);
   const [userData, setUserData] = useState({
-    name: 'John Doe',
+    name: '',
     profilePicture: placeholder,
+    id: '',
   });
   const [confirmVisible, setConfirmVisible] = useState(false);
 
@@ -28,6 +29,23 @@ const UserManagementScreen = ({ navigation }) => {
       SplashScreen.hideAsync();
     };
 
+    const fetchUserData = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('userId');
+        const name = await AsyncStorage.getItem('name');
+        if (name !== null && userId !== null) {
+          setUserData({
+            ...userData,
+            name: name,
+            id: userId,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
     fetchFontsAsync();
   }, []);
 

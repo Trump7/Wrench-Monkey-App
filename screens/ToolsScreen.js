@@ -7,7 +7,6 @@ import Header from '../components/header';
 import placeholder from '../assets/placeholder.png';
 import config from '../config';
 import { useFocusEffect } from '@react-navigation/native';
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const fetchFonts = () => {
@@ -19,7 +18,7 @@ const fetchFonts = () => {
 const ToolsScreen = ({ navigation }) => {
   const [fontLoaded, setFontLoaded] = useState(false);
   const [userData, setUserData] = useState({
-    name: 'John Doe',
+    name: '',
     profilePicture: placeholder,
     id: '',
   });
@@ -42,17 +41,11 @@ const ToolsScreen = ({ navigation }) => {
     const fetchUserData = async () => {
       try {
         const userId = await AsyncStorage.getItem('userId');
-        const token = await AsyncStorage.getItem('token');
-        if (userId && token) {
-          const response = await axios.get(`${config.apiURL}/users/${userId}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          const user = response.data;
+        const name = await AsyncStorage.getItem('name');
+        if (name !== null && userId !== null) {
           setUserData({
-            name: user.name,
-            profilePicture: user.profilePicture || placeholder,
+            ...userData,
+            name: name,
             id: userId,
           });
         }
@@ -306,7 +299,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontFamily: 'custom-font',
     fontSize: wp('8%'),
-    marginTop: hp('2%'),
+    //marginTop: hp('2%'),
     marginBottom: hp('2%'),
     textAlign: 'center',
     color: '#fff',

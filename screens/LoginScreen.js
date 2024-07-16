@@ -57,6 +57,14 @@ const LoginScreen = ({ navigation }) => {
           // Save token and userId using AsyncStorage
           await AsyncStorage.setItem('token', token);
           await AsyncStorage.setItem('userId', userId.toString());
+          const userResponse = await axios.get(`${config.apiURL}/users/${userId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const user = userResponse.data;
+          await AsyncStorage.setItem('name', user.name.toString());
+          
           console.log("token stored");
           setEmail('');
           setPassword('');
